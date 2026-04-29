@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>webiraj — Online prodavnica za BiH tržište</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --accent: #6366f1;
+      --accent-dark: #4f46e5;
+      --accent-light: #e0e7ff;
+      --text: #0f0f0f;
+      --text2: #555;
+      --text3: #999;
+      --bg: #ffffff;
+      --bg2: #f8f8fc;
+      --bg3: #f0f0f8;
+      --border: #e8e8f0;
+      --radius: 12px;
+      --radius-lg: 20px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text2);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { display: flex; align-items: center; gap: 12px; }
+    .btn-ghost {
+      padding: 9px 20px;
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text2);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary {
+      padding: 10px 22px;
+      background: var(--accent);
+      color: white;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 32px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(99,102,241,0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 28px;
+      border: 1px solid rgba(99,102,241,0.2);
+    }
+    .hero-badge-dot {
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    .hero h1 {
+      font-size: clamp(42px, 7vw, 80px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      max-width: 800px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--text2);
+      max-width: 520px;
+      line-height: 1.7;
+      margin: 0 auto 40px;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-hero {
+      padding: 16px 36px;
+      background: var(--accent);
+      color: white;
+      border-radius: 100px;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 4px 24px rgba(99,102,241,0.35);
+    }
+    .btn-hero:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.4); }
+    .btn-hero-ghost {
+      padding: 16px 36px;
+      border: 2px solid var(--border);
+      color: var(--text2);
+      border-radius: 100px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-hero-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .hero-note { margin-top: 20px; font-size: 13px; color: var(--text3); }
+
+    /* SOCIAL PROOF */
+    .social-proof {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 32px;
+    }
+    .social-proof-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    .social-stat { text-align: center; }
+    .social-stat-broj { font-size: 28px; font-weight: 900; color: var(--accent); letter-spacing: -1px; }
+    .social-stat-label { font-size: 13px; color: var(--text3); margin-top: 2px; }
+    .social-divider { width: 1px; height: 40px; background: var(--border); }
+
+    /* SECTIONS */
+    .section { max-width: 1200px; margin: 0 auto; padding: 96px 32px; }
+    .section-tag {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 16px;
+    }
+    .section-title { font-size: clamp(28px, 4vw, 44px); font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 16px; }
+    .section-sub { font-size: 18px; color: var(--text2); line-height: 1.7; max-width: 520px; }
+    .section-header-centered { text-align: center; margin-bottom: 64px; }
+    .section-header-centered .section-sub { margin: 0 auto; }
+
+    /* HOW IT WORKS */
+    .kako-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 64px; }
+    .kako-kartica {
+      text-align: center;
+      padding: 40px 32px;
+      background: var(--bg2);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .kako-kartica:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(99,102,241,0.1); }
+    .kako-broj { width: 52px; height: 52px; background: var(--accent); color: white; border-radius: 50%; font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+    .kako-ikona { font-size: 36px; margin-bottom: 16px; }
+    .kako-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .kako-text { font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+    /* FEATURES */
+    .features-bg { background: var(--bg2); }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .feature-kartica {
+      background: white;
+      border-radius: var(--radius);
+      padding: 28px;
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .feature-kartica:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+    .feature-ikona { width: 48px; height: 48px; background: var(--accent-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
+    .feature-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .feature-text { font-size: 14px; color: var(--text2); line-height: 1.6; }
+
+    /* TEMPLATES */
+    .templates-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 48px; }
+    .template-showcase { border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); transition: transform 0.2s, box-shadow 0.2s; }
+    .template-showcase:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+    .template-demo { height: 200px; padding: 16px; position: relative; }
+    .template-demo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; }
+    .template-demo-logo { font-weight: 900; font-size: 13px; }
+    .template-demo-btn { padding: 4px 10px; border-radius: 100px; font-size: 9px; font-weight: 700; border: none; }
+    .template-demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .template-demo-card { border-radius: 6px; overflow: hidden; }
+    .template-demo-img { height: 48px; }
+    .template-demo-info { padding: 6px; }
+    .template-demo-name { font-size: 8px; font-weight: 700; }
+    .template-demo-price { font-size: 8px; font-weight: 700; }
+    .template-info-bar { background: white; padding: 14px 16px; border-top: 1px solid var(--border); }
+    .template-info-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .template-info-desc { font-size: 12px; color: var(--text3); }
+
+    .demo-moderna { background: #ffffff; font-family: 'Inter', sans-serif; }
+    .demo-moderna .template-demo-header { border-bottom: 1px solid #eee; }
+    .demo-moderna .template-demo-logo { color: #111; }
+    .demo-moderna .template-demo-btn { background: #111; color: white; }
+    .demo-moderna .template-demo-card { background: #f8f8f8; }
+    .demo-moderna .template-demo-img { background: #e8e8e8; }
+    .demo-moderna .template-demo-name { color: #111; }
+    .demo-moderna .template-demo-price { color: #6366f1; }
+
+    .demo-elegantna { background: #faf8f4; font-family: 'Georgia', serif; }
+    .demo-elegantna .template-demo-header { border-bottom: 1px solid #d4b896; }
+    .demo-elegantna .template-demo-logo { color: #2c1810; font-size: 14px; }
+    .demo-elegantna .template-demo-btn { background: #2c1810; color: #c9a87c; border-radius: 0; }
+    .demo-elegantna .template-demo-card { background: white; border: 1px solid #e8d9cc; border-radius: 0; }
+    .demo-elegantna .template-demo-img { background: #f0e6dc; }
+    .demo-elegantna .template-demo-name { color: #2c1810; }
+    .demo-elegantna .template-demo-price { color: #c9a87c; }
+
+    .demo-bold { background: #0a0a0a; }
+    .demo-bold .template-demo-header { border-bottom: 1px solid #222; }
+    .demo-bold .template-demo-logo { color: #fff; }
+    .demo-bold .template-demo-btn { background: #ff2d2d; color: white; border-radius: 0; }
+    .demo-bold .template-demo-card { background: #1a1a1a; border-radius: 0; }
+    .demo-bold .template-demo-img { background: #2a2a2a; }
+    .demo-bold .template-demo-name { color: #fff; }
+    .demo-bold .template-demo-price { color: #ff2d2d; }
+
+    .demo-prirodna { background: #f7f3ec; }
+    .demo-prirodna .template-demo-header { border-bottom: 2px solid #c4b49a; }
+    .demo-prirodna .template-demo-logo { color: #3d2b1f; }
+    .demo-prirodna .template-demo-btn { background: #5a7a4a; color: white; }
+    .demo-prirodna .template-demo-card { background: #fffdf8; border: 1px solid #ddd0bc; border-radius: 8px; }
+    .demo-prirodna .template-demo-img { background: #e8dcc8; border-radius: 6px 6px 0 0; }
+    .demo-prirodna .template-demo-name { color: #3d2b1f; }
+    .demo-prirodna .template-demo-price { color: #5a7a4a; }
+
+    /* PRICING */
+    .pricing-grid { display: grid; grid-template-columns: 1fr; justify-content: center; gap: 24px; margin-top: 64px; align-items: start; }
+    .pricing-kartica { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px 32px; position: relative; max-width: 520px; width: 100%; }
+    .pricing-kartica.featured { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    .pricing-popular { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 4px 16px; border-radius: 100px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .pricing-plan { font-size: 14px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .pricing-cijena { font-size: 48px; font-weight: 900; letter-spacing: -2px; color: var(--text); margin-bottom: 4px; }
+    .pricing-cijena span { font-size: 20px; font-weight: 600; color: var(--text3); letter-spacing: 0; }
+    .pricing-opis { font-size: 14px; color: var(--text2); margin-bottom: 28px; }
+    .pricing-features { list-style: none; margin-bottom: 32px; }
+    .pricing-features li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text2); padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .pricing-features li:last-child { border-bottom: none; }
+    .pricing-check { color: #38a169; font-weight: 700; font-size: 16px; }
+    .pricing-x { color: var(--text3); font-weight: 700; }
+    .pricing-btn { display: block; width: 100%; padding: 14px; text-align: center; border-radius: 100px; font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+    .pricing-btn-main { background: var(--accent); color: white; }
+    .pricing-btn-main:hover { background: var(--accent-dark); }
+    .pricing-btn-ghost { background: var(--bg2); color: var(--text); border: 1px solid var(--border); }
+    .pricing-btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* TESTIMONIALS */
+    .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 64px; }
+    .testimonial-kartica { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; }
+    .testimonial-stars { color: #f59e0b; font-size: 16px; margin-bottom: 14px; }
+    .testimonial-text { font-size: 15px; color: var(--text2); line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+    .testimonial-autor { display: flex; align-items: center; gap: 12px; }
+    .testimonial-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: white; }
+    .testimonial-ime { font-size: 14px; font-weight: 700; }
+    .testimonial-posao { font-size: 12px; color: var(--text3); }
+
+    /* FAQ */
+    .faq-lista { max-width: 700px; margin: 48px auto 0; }
+    .faq-item { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+    .faq-pitanje { width: 100%; padding: 20px 24px; background: white; border: none; text-align: left; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: 'Inter', sans-serif; transition: background 0.2s; }
+    .faq-pitanje:hover { background: var(--bg2); }
+    .faq-arrow { font-size: 18px; transition: transform 0.2s; color: var(--text3); }
+    .faq-item.otvoreno .faq-arrow { transform: rotate(45deg); }
+    .faq-odgovor { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: var(--bg2); }
+    .faq-item.otvoreno .faq-odgovor { max-height: 200px; }
+    .faq-odgovor p { padding: 16px 24px; font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+    /* CTA */
+    .cta-section { background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%); padding: 96px 32px; text-align: center; position: relative; overflow: hidden; }
+    .cta-section::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+    .cta-inner { position: relative; max-width: 600px; margin: 0 auto; }
+    .cta-title { font-size: clamp(32px, 5vw, 52px); font-weight: 900; color: white; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
+    .cta-sub { font-size: 18px; color: rgba(255,255,255,0.8); margin-bottom: 40px; line-height: 1.6; }
+    .btn-white { display: inline-block; padding: 16px 40px; background: white; color: var(--accent); border-radius: 100px; font-size: 16px; font-weight: 700; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+
+    /* FOOTER */
+    footer { background: #0f0f0f; color: #aaa; padding: 64px 32px 32px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
+    .footer-logo { font-size: 24px; font-weight: 900; color: white; margin-bottom: 12px; }
+    .footer-desc { font-size: 14px; line-height: 1.7; color: #666; }
+    .footer-col-title { font-size: 13px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+    .footer-link { display: block; font-size: 14px; color: #666; text-decoration: none; margin-bottom: 10px; transition: color 0.2s; }
+    .footer-link:hover { color: white; }
+    .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 32px; border-top: 1px solid #222; display: flex; justify-content: space-between; font-size: 13px; color: #444; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .kako-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .templates-grid { grid-template-columns: 1fr 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 440px; margin-left: auto; margin-right: auto; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 600px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .templates-grid { grid-template-columns: 1fr; }
+      .social-proof-inner { gap: 24px; }
+      .social-divider { display: none; }
+      .hero-actions { flex-direction: column; }
+      .btn-hero, .btn-hero-ghost { width: 100%; text-align: center; }
+      .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <img src="assets/logo.png" style="height:100px; width:auto;" alt="webiraj">
+      <div class="nav-links">
+        <a href="#kako">Kako funkcioniše</a>
+        <a href="#funkcije">Funkcije</a>
+        <a href="#templates">Dizajn</a>
+        <a href="#cijene">Cijene</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="nav-cta">
+        <a href="auth.html" class="btn-ghost">Prijava</a>
+        <a href="auth.html" class="btn-primary">Otvori nalog →</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div>
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        Napravljeno za BiH tržište
+      </div>
+      <h1>Tvoja prodavnica.<br><span>Online. Danas.</span></h1>
+      <p>webiraj ti daje sve što trebaš da prodaješ online — bez tehničkog znanja, bez agencije, bez čekanja.</p>
+      <div class="hero-actions">
+        <a href="auth.html" class="btn-hero">Kreiraj prodavnicu →</a>
+        <a href="#kako" class="btn-hero-ghost">Pogledaj kako radi</a>
+      </div>
+      <p class="hero-note">Registracija traje 2 minute · Nije potrebna kreditna kartica</p>
+    </div>
+  </section>
+
+  <!-- SOCIAL PROOF -->
+  <div class="social-proof">
+    <div class="social-proof-inner">
+      <div class="social-stat">
+        <div class="social-stat-broj">5 min</div>
+        <div class="social-stat-label">Do prve prodavnice</div>
+      </div>
+      <div class="social-divider"></div>
+      <div class="social-stat">
+        <div class="social-stat-broj">4</div>
+        <div class="social-stat-label">Profesionalna dizajna</div>
+      </div>
+      <div class="social-divider"></div>
+      <div class="social-stat">
+        <div class="social-stat-broj">COD</div>
+        <div class="social-stat-label">Plaćanje pouzećem</div>
+      </div>
+      <div class="social-divider"></div>
+      <div class="social-stat">
+        <div class="social-stat-broj">BiH</div>
+        <div class="social-stat-label">Prilagođeno tržištu</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="kako">
+    <div class="section-header-centered">
+      <div class="section-tag">Proces</div>
+      <h2 class="section-title">Jednostavno kao što zvuči</h2>
+      <p class="section-sub">Tri koraka između tebe i prve narudžbe.</p>
+    </div>
+    <div class="kako-grid">
+      <div class="kako-kartica">
+        <div class="kako-broj">1</div>
+        <div class="kako-ikona">🏪</div>
+        <h3 class="kako-title">Postavi prodavnicu</h3>
+        <p class="kako-text">Odaberi naziv, link i dizajn. Dodaj logo i banner ako imaš. To je sve što trebaš da bi prodavnica izgledala profesionalno.</p>
+      </div>
+      <div class="kako-kartica">
+        <div class="kako-broj">2</div>
+        <div class="kako-ikona">📦</div>
+        <h3 class="kako-title">Dodaj proizvode</h3>
+        <p class="kako-text">Fotografije, opisi, cijene, varijante — sve na jednom mjestu. Zalihe se automatski smanjuju s svakom narudžbom.</p>
+      </div>
+      <div class="kako-kartica">
+        <div class="kako-broj">3</div>
+        <div class="kako-ikona">📲</div>
+        <h3 class="kako-title">Podijeli i prodaj</h3>
+        <p class="kako-text">Podijeli link na Instagramu, TikToku ili WhatsAppu. Narudžbe dolaze direktno u tvoj admin panel.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <div class="features-bg">
+    <div class="section" id="funkcije">
+      <div class="section-header-centered">
+        <div class="section-tag">Funkcije</div>
+        <h2 class="section-title">Sve na jednom mjestu</h2>
+        <p class="section-sub">Ništa suvišno. Samo ono što stvarno trebaš da prodaješ.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-kartica">
+          <div class="feature-ikona">🛍</div>
+          <h3 class="feature-title">Javna prodavnica</h3>
+          <p class="feature-text">Svaka prodavnica dobija vlastiti link koji možeš dijeliti gdje god želiš.</p>
+        </div>
+        <div class="feature-kartica">
+          <div class="feature-ikona">📱</div>
+          <h3 class="feature-title">Mobilni prikaz</h3>
+          <p class="feature-text">Dizajnirano za telefon. Većina kupaca kupuje s mobitela — tvoja prodavnica je na to spremna.</p>
+        </div>
+        <div class="feature-kartica">
+          <div class="feature-ikona">💵</div>
+          <h3 class="feature-title">Pouzeće (COD)</h3>
+          <p class="feature-text">Kupci plaćaju kuriru pri preuzimanju. Standard na BiH tržištu — bez bankovnih kartica, bez komplikacija.</p>
+        </div>
+        <div class="feature-kartica">
+          <div class="feature-ikona">📊</div>
+          <h3 class="feature-title">Upravljanje narudžbama</h3>
+          <p class="feature-text">Pregled svih narudžbi, filtriranje po statusu, mijenjanje statusa jednim klikom.</p>
+        </div>
+        <div class="feature-kartica">
+          <div class="feature-ikona">🎨</div>
+          <h3 class="feature-title">4 dizajna</h3>
+          <p class="feature-text">Moderna, Elegantna, Bold, Prirodna. Svaki dizajn je kompletan — font, boje, layout. Mijenja se jednim klikom.</p>
+        </div>
+        <div class="feature-kartica">
+          <div class="feature-ikona">🏷</div>
+          <h3 class="feature-title">Kodovi za popust</h3>
+          <p class="feature-text">Postotni ili fiksni popust, minimalna narudžba, rok trajanja, ograničen broj upotreba.</p>
+        </div>
+        <div class="feature-kartica">
+          <div class="feature-ikona">📸</div>
+          <h3 class="feature-title">Slike i mediji</h3>
+          <p class="feature-text">Do 10 slika po proizvodu. Logo i hero banner za prodavnicu. Sve se čuva sigurno.</p>
+        </div>
+        <div class="feature-kartica">
+          <div class="feature-ikona">🔢</div>
+          <h3 class="feature-title">Varijante i zalihe</h3>
+          <p class="feature-text">Veličina, boja, volumen, težina, materijal — svaka varijanta ima vlastitu cijenu i zalihu.</p>
+        </div>
+        <div class="feature-kartica">
+          <div class="feature-ikona">🏪</div>
+          <h3 class="feature-title">Više prodavnica</h3>
+          <p class="feature-text">Jedan nalog, više prodavnica. Svaka ima vlastite proizvode, narudžbe i postavke.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEMPLATES -->
+  <section class="section" id="templates">
+    <div class="section-header-centered">
+      <div class="section-tag">Dizajn</div>
+      <h2 class="section-title">Izaberi svoj stil</h2>
+      <p class="section-sub">Svaki dizajn je kompletan. Možeš ga promijeniti u bilo koje vrijeme iz postavki.</p>
+    </div>
+    <div class="templates-grid">
+      <div class="template-showcase">
+        <div class="template-demo demo-moderna">
+          <div class="template-demo-header">
+            <span class="template-demo-logo">Prodavnica</span>
+            <button class="template-demo-btn">Korpa</button>
+          </div>
+          <div class="template-demo-grid">
+            <div class="template-demo-card">
+              <div class="template-demo-img"></div>
+              <div class="template-demo-info">
+                <div class="template-demo-name">Proizvod</div>
+                <div class="template-demo-price">25 KM</div>
+              </div>
+            </div>
+            <div class="template-demo-card">
+              <div class="template-demo-img"></div>
+              <div class="template-demo-info">
+                <div class="template-demo-name">Proizvod</div>
+                <div class="template-demo-price">40 KM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="template-info-bar">
+          <div class="template-info-name">Moderna</div>
+          <div class="template-info-desc">Čist, minimalan dizajn</div>
+        </div>
+      </div>
+
+      <div class="template-showcase">
+        <div class="template-demo demo-elegantna">
+          <div class="template-demo-header">
+            <span class="template-demo-logo">Prodavnica</span>
+            <button class="template-demo-btn">Korpa</button>
+          </div>
+          <div class="template-demo-grid">
+            <div class="template-demo-card">
+              <div class="template-demo-img"></div>
+              <div class="template-demo-info">
+                <div class="template-demo-name">Proizvod</div>
+                <div class="template-demo-price">25 KM</div>
+              </div>
+            </div>
+            <div class="template-demo-card">
+              <div class="template-demo-img"></div>
+              <div class="template-demo-info">
+                <div class="template-demo-name">Proizvod</div>
+                <div class="template-demo-price">40 KM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="template-info-bar">
+          <div class="template-info-name">Elegantna</div>
+          <div class="template-info-desc">Luksuzni serif dizajn</div>
+        </div>
+      </div>
+
+      <div class="template-showcase">
+        <div class="template-demo demo-bold">
+          <div class="template-demo-header">
+            <span class="template-demo-logo">Prodavnica</span>
+            <button class="template-demo-btn">Korpa</button>
+          </div>
+          <div class="template-demo-grid">
+            <div class="template-demo-card">
+              <div class="template-demo-img"></div>
+              <div class="template-demo-info">
+                <div class="template-demo-name">Proizvod</div>
+                <div class="template-demo-price">25 KM</div>
+              </div>
+            </div>
+            <div class="template-demo-card">
+              <div class="template-demo-img"></div>
+              <div class="template-demo-info">
+                <div class="template-demo-name">Proizvod</div>
+                <div class="template-demo-price">40 KM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="template-info-bar">
+          <div class="template-info-name">Bold</div>
+          <div class="template-info-desc">Tamni, snažan dizajn</div>
+        </div>
+      </div>
+
+      <div class="template-showcase">
+        <div class="template-demo demo-prirodna">
+          <div class="template-demo-header">
+            <span class="template-demo-logo">Prodavnica</span>
+            <button class="template-demo-btn">Korpa</button>
+          </div>
+          <div class="template-demo-grid">
+            <div class="template-demo-card">
+              <div class="template-demo-img"></div>
+              <div class="template-demo-info">
+                <div class="template-demo-name">Proizvod</div>
+                <div class="template-demo-price">25 KM</div>
+              </div>
+            </div>
+            <div class="template-demo-card">
+              <div class="template-demo-img"></div>
+              <div class="template-demo-info">
+                <div class="template-demo-name">Proizvod</div>
+                <div class="template-demo-price">40 KM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="template-info-bar">
+          <div class="template-info-name">Prirodna</div>
+          <div class="template-info-desc">Topli, zemaljski tonovi</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <div class="features-bg">
+    <div class="section" id="cijene">
+      <div class="section-header-centered">
+        <div class="section-tag">Cijene</div>
+        <h2 class="section-title">Transparentne cijene</h2>
+        <p class="section-sub">Platforma je trenutno u fazi razvoja. Sve funkcije su dostupne svim korisnicima dok ne uvedemo planove.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pricing-kartica">
+          <p class="pricing-plan">Regular</p>
+          <div class="pricing-cijena">0 <span>KM/mj</span></div>
+          <p class="pricing-opis">Sve funkcije su dostupne dok je platforma u razvoju.</p>
+          <ul class="pricing-features">
+            <li><span class="pricing-check">✓</span> Neograničene prodavnice</li>
+            <li><span class="pricing-check">✓</span> Neograničeni proizvodi</li>
+            <li><span class="pricing-check">✓</span> Svi dizajni dostupni</li>
+            <li><span class="pricing-check">✓</span> Upravljanje narudžbama</li>
+            <li><span class="pricing-check">✓</span> Kodovi za popust</li>
+            <li><span class="pricing-check">✓</span> Sveukupne analitike</li>
+          </ul>
+          <a href="auth.html" class="pricing-btn pricing-btn-main">Počni besplatno →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TESTIMONIALS -->
+  <section class="section">
+    <div class="section-header-centered">
+      <div class="section-tag">Iskustva</div>
+      <h2 class="section-title">Šta kažu prodavci</h2>
+      <p class="section-sub">Stvarni korisnici, stvarni rezultati.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-kartica">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Imala sam gotovu prodavnicu za manje od sat vremena. Isti dan sam podijelila link i stigle su prve narudžbe."</p>
+        <div class="testimonial-autor">
+          <div class="testimonial-avatar" style="background:#6366f1;">A</div>
+          <div>
+            <p class="testimonial-ime">Amra K.</p>
+            <p class="testimonial-posao">Kozmetika, Sarajevo</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-kartica">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Pokušao sam napraviti stranicu sam, sedam dana bez rezultata. Ovdje je sve funkcionisalo za 15 minuta."</p>
+        <div class="testimonial-autor">
+          <div class="testimonial-avatar" style="background:#8b5cf6;">M</div>
+          <div>
+            <p class="testimonial-ime">Mirza H.</p>
+            <p class="testimonial-posao">Elektronika, Tuzla</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-kartica">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Konačno nešto prilagođeno BiH. Pouzeće, dostava, sve je već tu i radi kako treba."</p>
+        <div class="testimonial-autor">
+          <div class="testimonial-avatar" style="background:#5a7a4a;">S</div>
+          <div>
+            <p class="testimonial-ime">Selma B.</p>
+            <p class="testimonial-posao">Handmade, Mostar</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <div class="features-bg">
+    <div class="section" id="faq">
+      <div class="section-header-centered">
+        <div class="section-tag">FAQ</div>
+        <h2 class="section-title">Često postavljana pitanja</h2>
+      </div>
+      <div class="faq-lista">
+        <div class="faq-item">
+          <button class="faq-pitanje" onclick="toggleFaq(this)">
+            Koliko košta korištenje?
+            <span class="faq-arrow">+</span>
+          </button>
+          <div class="faq-odgovor">
+            <p>Platforma je trenutno u fazi razvoja i sve funkcije su dostupne svim registrovanim korisnicima. Kada uvedemo planove, korisnici koji se registruju sada dobit će povoljnije uslove.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-pitanje" onclick="toggleFaq(this)">
+            Trebam li tehničko znanje?
+            <span class="faq-arrow">+</span>
+          </button>
+          <div class="faq-odgovor">
+            <p>Ne. Sve je dizajnirano da bude intuitivno. Ako znaš koristiti društvene mreže, znaš koristiti webiraj.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-pitanje" onclick="toggleFaq(this)">
+            Kako kupci plaćaju?
+            <span class="faq-arrow">+</span>
+          </button>
+          <div class="faq-odgovor">
+            <p>Plaćanje pouzećem — kupci naručuju online i plaćaju kuriru pri preuzimanju paketa. Ovo je najrašireniji način plaćanja u BiH.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-pitanje" onclick="toggleFaq(this)">
+            Mogu li imati više prodavnica?
+            <span class="faq-arrow">+</span>
+          </button>
+          <div class="faq-odgovor">
+            <p>Da. Jedan nalog može imati više prodavnica, svaka s vlastitim proizvodima, narudžbama i dizajnom.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-pitanje" onclick="toggleFaq(this)">
+            Mogu li promijeniti dizajn prodavnice?
+            <span class="faq-arrow">+</span>
+          </button>
+          <div class="faq-odgovor">
+            <p>Da, u bilo koje vrijeme. Postavke → Izgled → odaberi novi dizajn. Promjena se odmah primijenjuje.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-pitanje" onclick="toggleFaq(this)">
+            Šta ako imam pitanje ili problem?
+            <span class="faq-arrow">+</span>
+          </button>
+          <div class="faq-odgovor">
+            <p>Kontaktiraj nas na webijar@gmail.com Odgovaramo u roku od 24 sata radnim danima.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <h2 class="cta-title">Spreman za prvu narudžbu?</h2>
+      <p class="cta-sub">Postavi prodavnicu danas. Bez tehničkog znanja, bez agencije.</p>
+      <a href="auth.html" class="btn-white">Kreiraj prodavnicu →</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div>
+      <img src="assets/logo.png" style="height:100px; width:auto; filter:brightness(0) invert(1);" alt="webiraj">
+        <p class="footer-desc">Platforma za online prodaju prilagođena BiH tržištu. Jednostavna za postavljanje, profesionalna za kupce.</p>
+      </div>
+      <div>
+        <p class="footer-col-title">Platforma</p>
+        <a href="#kako" class="footer-link">Kako funkcioniše</a>
+        <a href="#funkcije" class="footer-link">Funkcije</a>
+        <a href="#templates" class="footer-link">Dizajn</a>
+        <a href="#cijene" class="footer-link">Cijene</a>
+      </div>
+      <div>
+        <p class="footer-col-title">Nalog</p>
+        <a href="auth.html" class="footer-link">Prijava</a>
+        <a href="auth.html" class="footer-link">Registracija</a>
+        <a href="dashboard.html" class="footer-link">Kontrolna tabla</a>
+      </div>
+      <div>
+        <p class="footer-col-title">Kontakt</p>
+        <a href="mailto:info@webiraj.ba" class="footer-link">info@webiraj.ba</a>
+        <a href="#" class="footer-link">Instagram</a>
+        <a href="#" class="footer-link">Facebook</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 webiraj. Sva prava zadržana.</span>
+      <span>Made in 🇧🇦 BiH</span>
+    </div>
+  </footer>
+
+  <script>
+    function toggleFaq(dugme) {
+      const item = dugme.closest('.faq-item')
+      const jeOtvoreno = item.classList.contains('otvoreno')
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('otvoreno'))
+      if (!jeOtvoreno) item.classList.add('otvoreno')
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault()
+        const target = document.querySelector(a.getAttribute('href'))
+        if (target) target.scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+
+</body>
+</html>

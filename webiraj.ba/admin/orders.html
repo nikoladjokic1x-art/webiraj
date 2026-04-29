@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Narudžbe — webiraj</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --sidebar-w: 260px;
+      --header-h: 64px;
+      --accent: #1a6ef5;
+      --accent-light: #e8f0fe;
+      --accent-dark: #1557c0;
+      --bg: #f6f8fa;
+      --bg-white: #ffffff;
+      --text: #0f0f0f;
+      --text2: #5c6370;
+      --text3: #9ba3af;
+      --border: #e5e7eb;
+      --radius: 10px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w); background: var(--bg-white); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 50; }
+    .sidebar-logo { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
+    .sidebar-logo img { height: 100px; width: auto; }
+    .sidebar-logo-text { font-size: 18px; font-weight: 800; color: var(--accent); }
+    .sidebar-store-switcher { margin: 16px 16px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; transition: border-color 0.2s; }
+    .sidebar-store-switcher:hover { border-color: var(--accent); }
+    .store-switcher-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+    .store-switcher-name { font-size: 14px; font-weight: 600; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-nav { flex: 1; padding: 8px 12px; overflow-y: auto; }
+    .nav-section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; padding: 8px 12px 4px; margin-top: 8px; }
+    .nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; color: var(--text2); transition: all 0.15s; margin-bottom: 2px; }
+    .nav-link:hover { background: var(--bg); color: var(--text); }
+    .nav-link.aktivan { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+    .nav-icon { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.7; }
+    .nav-link.aktivan .nav-icon { opacity: 1; }
+    .nav-badge { margin-left: auto; background: var(--accent); color: white; border-radius: 100px; font-size: 11px; font-weight: 700; padding: 2px 7px; }
+.sidebar-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.user-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+.user-email {
+  font-size: 12px; color: var(--text2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex: 1;
+}
+.odjava-btn {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: none;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3);
+  transition: all 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.odjava-btn:hover { border-color: #e53e3e; color: #e53e3e; background: #fff5f5; }
+.odjava-btn svg { width: 14px; height: 14px; }
+
+    /* MAIN */
+    .main { margin-left: var(--sidebar-w); min-height: 100vh; }
+    .topbar { height: var(--header-h); background: var(--bg-white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 40; }
+    .topbar-title { font-size: 18px; font-weight: 700; }
+    .topbar-sub { font-size: 13px; color: var(--text3); margin-top: 2px; }
+    .content { padding: 32px; }
+
+    /* FILTERS */
+    .filters-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .filter-btn { padding: 7px 16px; border-radius: 100px; border: 1px solid var(--border); background: var(--bg-white); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.aktivan { background: var(--accent); color: white; border-color: var(--accent); }
+    .filter-count { display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.25); border-radius: 100px; font-size: 11px; font-weight: 700; padding: 1px 6px; min-width: 20px; }
+    .filter-btn:not(.aktivan) .filter-count { background: var(--bg); color: var(--text3); }
+
+    /* CARD + TABLE */
+    .card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th { padding: 11px 20px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; background: var(--bg); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .table td { padding: 14px 20px; font-size: 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+    .table tr:last-child td { border-bottom: none; }
+    .table tbody tr:hover td { background: var(--bg); cursor: pointer; }
+
+    /* BADGES */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .badge-novo { background: #fef3c7; color: #d97706; }
+    .badge-novo .badge-dot { background: #d97706; }
+    .badge-potvrdeno { background: #dbeafe; color: #2563eb; }
+    .badge-potvrdeno .badge-dot { background: #2563eb; }
+    .badge-poslano { background: #e0e7ff; color: #4f46e5; }
+    .badge-poslano .badge-dot { background: #4f46e5; }
+    .badge-dostavljeno { background: #d1fae5; color: #059669; }
+    .badge-dostavljeno .badge-dot { background: #059669; }
+    .badge-otkazano { background: #fee2e2; color: #dc2626; }
+    .badge-otkazano .badge-dot { background: #dc2626; }
+
+    /* ORDER DRAWER */
+    .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; backdrop-filter: blur(2px); }
+    .drawer-overlay.otvorena { display: block; }
+    .drawer { position: fixed; right: 0; top: 0; bottom: 0; width: 480px; background: var(--bg-white); border-left: 1px solid var(--border); z-index: 201; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; box-shadow: -4px 0 24px rgba(0,0,0,0.1); }
+    .drawer.otvorena { transform: translateX(0); }
+    .drawer-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .drawer-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .drawer-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--text2); transition: all 0.2s; }
+    .drawer-close:hover { border-color: #e53e3e; color: #e53e3e; }
+    .drawer-body { flex: 1; overflow-y: auto; padding: 24px; }
+    .drawer-section { margin-bottom: 24px; }
+    .drawer-section-title { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .drawer-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; gap: 16px; }
+    .drawer-row:last-child { border-bottom: none; }
+    .drawer-row-label { color: var(--text3); font-size: 13px; flex-shrink: 0; }
+    .drawer-row-value { font-weight: 500; text-align: right; }
+    .drawer-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; gap: 12px; }
+    .drawer-item:last-child { border-bottom: none; }
+    .drawer-item-name { color: var(--text2); flex: 1; }
+    .drawer-item-price { font-weight: 700; flex-shrink: 0; }
+    .drawer-total { display: flex; justify-content: space-between; font-size: 16px; font-weight: 800; padding-top: 14px; margin-top: 4px; border-top: 2px solid var(--border); }
+
+    /* DRAWER FOOTER — action buttons + status select */
+    .drawer-footer { padding: 16px 24px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--bg); display: flex; flex-direction: column; gap: 12px; }
+    .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .action-btns.three-col { grid-template-columns: 1fr 1fr 1fr; }
+    .btn-accept { padding: 11px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; background: #059669; color: white; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-accept:hover { background: #047857; }
+    .btn-decline { padding: 11px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-decline:hover { background: #d97706; }
+    .btn-delete { padding: 11px; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-delete:hover { background: #dc2626; color: white; }
+    .status-label { font-size: 12px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+    .status-select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--bg-white); color: var(--text); cursor: pointer; outline: none; transition: border-color 0.2s; }
+    .status-select:focus { border-color: var(--accent); }
+
+    /* CONFIRM DELETE MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 300; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+    .modal-overlay.otvorena { display: flex; }
+    .modal { background: var(--bg-white); border-radius: 14px; padding: 28px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    .modal-icon { font-size: 36px; margin-bottom: 12px; }
+    .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .modal-text { font-size: 14px; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
+    .modal-btns { display: flex; gap: 10px; }
+    .modal-btn-cancel { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: none; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text2); transition: all 0.2s; }
+    .modal-btn-cancel:hover { border-color: var(--text2); }
+    .modal-btn-confirm { flex: 1; padding: 10px; border: none; border-radius: 8px; background: #dc2626; color: white; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .modal-btn-confirm:hover { background: #b91c1c; }
+
+    /* EMPTY */
+    .empty-state { text-align: center; padding: 64px 24px; color: var(--text3); }
+    .empty-state-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-state-text { font-size: 14px; }
+    /* STORE SWITCHER DROPDOWN */
+.switcher-wrapper { position: relative; margin: 16px 16px 8px; }
+.switcher-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+.switcher-dropdown.otvorena { display: block; }
+.switcher-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  transition: background 0.15s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.switcher-option:hover { background: var(--bg); color: var(--text); }
+.switcher-option.aktivna { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+.switcher-active-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
+.switcher-nova {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  border-top: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.switcher-nova:hover { background: var(--accent-light); }
+/* HAMBURGER BUTTON */
+.hamburger {
+  display: none;
+  width: 36px; height: 36px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.hamburger svg { width: 18px; height: 18px; color: var(--text2); }
+
+/* SIDEBAR OVERLAY */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 49;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.otvorena { display: block; }
+
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    z-index: 51;
+  }
+  .sidebar.otvorena { transform: translateX(0); }
+
+  .main { margin-left: 0; }
+
+  .topbar {
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .topbar-title { font-size: 16px; }
+
+  .content { padding: 16px; }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .filters-bar { gap: 6px; }
+  .filter-btn { padding: 6px 12px; font-size: 12px; }
+
+  .drawer { width: 100% !important; }
+
+  .form-grid { grid-template-columns: 1fr !important; }
+
+  .products-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  .template-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  .table th, .table td { padding: 10px 12px !important; font-size: 13px !important; }
+}
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="../assets/logo.png" alt="webiraj" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+      <span class="sidebar-logo-text" style="display:none;">webiraj</span>
+    </div>
+   <div class="switcher-wrapper" id="switcher-wrapper">
+  <div class="sidebar-store-switcher" onclick="toggleSwitcher()">
+    <div class="store-switcher-label">Aktivna prodavnica</div>
+    <div class="store-switcher-name">
+      <span id="switcher-naziv">Učitavanje...</span>
+      <span style="color:var(--text3); font-size:12px;" id="switcher-arrow">⇅</span>
+    </div>
+  </div>
+  <div class="switcher-dropdown" id="switcher-dropdown">
+    <div id="switcher-opcije"></div>
+    <div class="switcher-nova" onclick="window.location.href='../dashboard-setup.html'">+ Nova prodavnica</div>
+  </div>
+</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Glavni meni</div>
+      <a href="../dashboard.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Kontrolna tabla
+      </a>
+      <a href="products.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        Proizvodi
+      </a>
+      <a href="orders.html" class="nav-link aktivan">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+        Narudžbe
+        <span class="nav-badge" id="nove-badge" style="display:none;">0</span>
+      </a>
+      <a href="discounts.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        Popusti
+      </a>
+      <div class="nav-section-label">Prodavnica</div>
+      <a href="settings.html" class="nav-link">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Postavke
+      </a>
+    </nav>
+  <div class="sidebar-footer">
+  <div class="user-avatar" id="user-avatar">?</div>
+  <div class="user-email" id="user-email">Učitavanje...</div>
+  <button class="odjava-btn" onclick="odjava()" title="Odjava">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+  </button>
+</div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+      <div>
+        <h1 class="topbar-title">Narudžbe</h1>
+        <p class="topbar-sub" id="topbar-sub"></p>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="filters-bar">
+        <button class="filter-btn aktivan" onclick="filtriraj('sve', this)">Sve <span class="filter-count" id="count-sve">0</span></button>
+        <button class="filter-btn" onclick="filtriraj('novo', this)">Nove <span class="filter-count" id="count-novo">0</span></button>
+        <button class="filter-btn" onclick="filtriraj('potvrdeno', this)">Potvrđene <span class="filter-count" id="count-potvrdeno">0</span></button>
+        <button class="filter-btn" onclick="filtriraj('poslano', this)">Poslane <span class="filter-count" id="count-poslano">0</span></button>
+        <button class="filter-btn" onclick="filtriraj('dostavljeno', this)">Dostavljene <span class="filter-count" id="count-dostavljeno">0</span></button>
+        <button class="filter-btn" onclick="filtriraj('otkazano', this)">Otkazane <span class="filter-count" id="count-otkazano">0</span></button>
+      </div>
+
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Kupac</th>
+              <th>Grad</th>
+              <th>Iznos</th>
+              <th>Proizvodi</th>
+              <th>Status</th>
+              <th>Datum</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="zatvoriDrawer()"></div>
+
+  <!-- ORDER DRAWER -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-title" id="drawer-title">Detalji narudžbe</div>
+      <button class="drawer-close" onclick="zatvoriDrawer()">✕</button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+    <div class="drawer-footer">
+      <!-- Quick action buttons, shown/hidden based on current status -->
+      <div id="action-btns-container"></div>
+      <!-- Fine-grained status select -->
+      <div>
+        <div class="status-label">Promijeni status</div>
+        <select class="status-select" id="status-select" onchange="promijeniStatus(this.value)">
+          <option value="novo">Novo</option>
+          <option value="potvrdeno">Potvrđeno</option>
+          <option value="poslano">Poslano</option>
+          <option value="dostavljeno">Dostavljeno</option>
+          <option value="otkazano">Otkazano</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRM MODAL -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-icon">🗑️</div>
+      <div class="modal-title">Obrisati narudžbu?</div>
+      <div class="modal-text">Ova akcija je trajna i ne može se poništiti. Narudžba će biti trajno uklonjena.</div>
+      <div class="modal-btns">
+        <button class="modal-btn-cancel" onclick="zatvoriModal()">Odustani</button>
+        <button class="modal-btn-confirm" onclick="potvrdiIzbrisati()">Da, obriši</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let prodavnicaId = null
+    let sveNarudžbe = []
+    let aktivniFilter = 'sve'
+    let aktivnaNarudžba = null
+    let sveProdavniceGlobal = []
+
+async function učitajSwitcherProdavnice(userId, trenutnaId) {
+  const { data: prodavnice } = await db
+    .from('stores').select('id, name, slug')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true })
+
+  sveProdavniceGlobal = prodavnice || []
+
+  const opcije = document.getElementById('switcher-opcije')
+  opcije.innerHTML = prodavnice.map(p => `
+    <div class="switcher-option ${p.id === trenutnaId ? 'aktivna' : ''}"
+         onclick="prebacijSeProdavnica('${p.id}')">
+      <span>${p.name}</span>
+      ${p.id === trenutnaId ? '<span class="switcher-active-dot"></span>' : ''}
+    </div>
+  `).join('')
+}
+
+function toggleSwitcher() {
+  const dropdown = document.getElementById('switcher-dropdown')
+  const arrow = document.getElementById('switcher-arrow')
+  const isOpen = dropdown.classList.contains('otvorena')
+  dropdown.classList.toggle('otvorena')
+  arrow.style.transform = isOpen ? '' : 'rotate(180deg)'
+}
+
+function prebacijSeProdavnica(id) {
+  localStorage.setItem('aktivna_prodavnica', id)
+  window.location.reload()
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const wrapper = document.getElementById('switcher-wrapper')
+  if (wrapper && !wrapper.contains(e.target)) {
+    document.getElementById('switcher-dropdown')?.classList.remove('otvorena')
+    const arrow = document.getElementById('switcher-arrow')
+    if (arrow) arrow.style.transform = ''
+  }
+})
+    function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('otvorena')
+  document.getElementById('sidebar-overlay').classList.toggle('otvorena')
+}
+    async function init() {
+      const { data: { user } } = await db.auth.getUser()
+      if (!user) { window.location.href = '../auth.html'; return }
+
+      document.getElementById('user-avatar').innerText = user.email[0].toUpperCase()
+      document.getElementById('user-email').innerText = user.email
+
+      prodavnicaId = localStorage.getItem('aktivna_prodavnica')
+      if (!prodavnicaId) { window.location.href = '../dashboard.html'; return }
+
+      const { data: prodavnica } = await db.from('stores').select('name').eq('id', prodavnicaId).single()
+      if (prodavnica) {
+        document.getElementById('switcher-naziv').innerText = prodavnica.name
+        document.getElementById('topbar-sub').innerText = prodavnica.name
+       učitajSwitcherProdavnice(user.id, prodavnicaId)
+      }
+
+      učitajNarudžbe()
+    }
+
+    async function učitajNarudžbe() {
+      const { data } = await db
+        .from('orders')
+        .select('*, order_items(*, products(name))')
+        .eq('store_id', prodavnicaId)
+        .order('created_at', { ascending: false })
+
+      sveNarudžbe = data || []
+      osvjeziCounte()
+      prikaziNarudžbe()
+    }
+
+    function osvjeziCounte() {
+      document.getElementById('count-sve').innerText = sveNarudžbe.length
+      ;['novo', 'potvrdeno', 'poslano', 'dostavljeno', 'otkazano'].forEach(s => {
+        const el = document.getElementById(`count-${s}`)
+        if (el) el.innerText = sveNarudžbe.filter(n => n.status === s).length
+      })
+      const brNovih = sveNarudžbe.filter(n => n.status === 'novo').length
+      const badge = document.getElementById('nove-badge')
+      if (brNovih > 0) { badge.innerText = brNovih; badge.style.display = 'inline-flex' }
+      else { badge.style.display = 'none' }
+    }
+
+    function filtriraj(status, btn) {
+      aktivniFilter = status
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('aktivan'))
+      btn.classList.add('aktivan')
+      prikaziNarudžbe()
+    }
+
+    function prikaziNarudžbe() {
+      const filtrirane = aktivniFilter === 'sve'
+        ? sveNarudžbe
+        : sveNarudžbe.filter(n => n.status === aktivniFilter)
+
+      const tbody = document.getElementById('orders-body')
+
+      if (filtrirane.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="6">
+            <div class="empty-state">
+              <div class="empty-state-icon">📋</div>
+              <div class="empty-state-text">Nema narudžbi u ovoj kategoriji</div>
+            </div>
+          </td></tr>`
+        return
+      }
+
+      tbody.innerHTML = filtrirane.map(n => {
+        const datum = new Date(n.created_at).toLocaleDateString('bs-BA', {
+          day: '2-digit', month: '2-digit', year: 'numeric'
+        })
+        const brProizvoda = n.order_items?.length || 0
+        return `
+          <tr onclick="otvoriDrawer('${n.id}')">
+            <td>
+              <div style="font-weight:600;">${n.customer_name}</div>
+              <div style="font-size:12px; color:var(--text3); margin-top:2px;">${n.customer_phone}</div>
+            </td>
+            <td style="color:var(--text2);">${n.customer_city}</td>
+            <td style="font-weight:700;">${parseFloat(n.total_amount).toFixed(2)} KM</td>
+            <td style="color:var(--text3);">${brProizvoda} ${brProizvoda === 1 ? 'stavka' : 'stavki'}</td>
+            <td><span class="badge badge-${n.status}"><span class="badge-dot"></span>${preveziStatus(n.status)}</span></td>
+            <td style="color:var(--text3); font-size:13px;">${datum}</td>
+          </tr>`
+      }).join('')
+    }
+
+    function renderActionBtns(status) {
+      const container = document.getElementById('action-btns-container')
+
+      // Always show Delete. Show Accept/Decline only when relevant.
+      if (status === 'novo') {
+        container.innerHTML = `
+          <div class="action-btns three-col" style="margin-bottom:0;">
+            <button class="btn-accept" onclick="promijeniStatus('potvrdeno')">✔ Prihvati</button>
+            <button class="btn-decline" onclick="promijeniStatus('otkazano')">✖ Odbij</button>
+            <button class="btn-delete" onclick="otvoriModal()">🗑 Obriši</button>
+          </div>`
+      } else if (status === 'potvrdeno') {
+        container.innerHTML = `
+          <div class="action-btns" style="margin-bottom:0;">
+            <button class="btn-accept" onclick="promijeniStatus('poslano')" style="background:#4f46e5;">📦 Označi poslano</button>
+            <button class="btn-delete" onclick="otvoriModal()">🗑 Obriši</button>
+          </div>`
+      } else if (status === 'poslano') {
+        container.innerHTML = `
+          <div class="action-btns" style="margin-bottom:0;">
+            <button class="btn-accept" onclick="promijeniStatus('dostavljeno')">✔ Dostavljeno</button>
+            <button class="btn-delete" onclick="otvoriModal()">🗑 Obriši</button>
+          </div>`
+      } else {
+        container.innerHTML = `
+          <div class="action-btns" style="margin-bottom:0;">
+            <button class="btn-delete" onclick="otvoriModal()" style="grid-column:1/-1;">🗑 Obriši narudžbu</button>
+          </div>`
+      }
+    }
+
+    function otvoriDrawer(id) {
+      aktivnaNarudžba = sveNarudžbe.find(n => n.id === id)
+      if (!aktivnaNarudžba) return
+
+      const n = aktivnaNarudžba
+      const datum = new Date(n.created_at).toLocaleDateString('bs-BA', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      })
+
+      document.getElementById('drawer-title').innerHTML = `
+        Narudžba
+        <span class="badge badge-${n.status}">
+          <span class="badge-dot"></span>${preveziStatus(n.status)}
+        </span>`
+
+      document.getElementById('status-select').value = n.status
+      renderActionBtns(n.status)
+
+      const stavke = n.order_items?.map(s => `
+        <div class="drawer-item">
+          <span class="drawer-item-name">
+            ${s.products?.name || s.product_name}
+            ${s.variant_name ? `<span style="color:var(--text3);"> (${s.variant_name})</span>` : ''}
+            × ${s.quantity}
+          </span>
+          <span class="drawer-item-price">${(s.unit_price * s.quantity).toFixed(2)} KM</span>
+        </div>
+      `).join('') || ''
+
+      document.getElementById('drawer-body').innerHTML = `
+        <div class="drawer-section">
+          <div class="drawer-section-title">Kontakt</div>
+          <div class="drawer-row">
+            <span class="drawer-row-label">Ime</span>
+            <span class="drawer-row-value">${n.customer_name}</span>
+          </div>
+          <div class="drawer-row">
+            <span class="drawer-row-label">Telefon</span>
+            <span class="drawer-row-value">${n.customer_phone}</span>
+          </div>
+          ${n.customer_email ? `
+          <div class="drawer-row">
+            <span class="drawer-row-label">Email</span>
+            <span class="drawer-row-value">${n.customer_email}</span>
+          </div>` : ''}
+          <div class="drawer-row">
+            <span class="drawer-row-label">Datum</span>
+            <span class="drawer-row-value">${datum}</span>
+          </div>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Adresa dostave</div>
+          <div class="drawer-row">
+            <span class="drawer-row-label">Ulica</span>
+            <span class="drawer-row-value">${n.customer_address}</span>
+          </div>
+          <div class="drawer-row">
+            <span class="drawer-row-label">Grad</span>
+            <span class="drawer-row-value">${n.customer_city}</span>
+          </div>
+          ${n.note ? `
+          <div class="drawer-row">
+            <span class="drawer-row-label">Napomena</span>
+            <span class="drawer-row-value" style="color:var(--text2);">${n.note}</span>
+          </div>` : ''}
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Proizvodi</div>
+          ${stavke}
+          ${n.discount_amount > 0 ? `
+          <div class="drawer-item">
+            <span class="drawer-item-name" style="color:#059669;">Popust</span>
+            <span class="drawer-item-price" style="color:#059669;">-${parseFloat(n.discount_amount).toFixed(2)} KM</span>
+          </div>` : ''}
+          <div class="drawer-total">
+            <span>Ukupno</span>
+            <span>${parseFloat(n.total_amount).toFixed(2)} KM</span>
+          </div>
+        </div>
+      `
+
+      document.getElementById('drawer-overlay').classList.add('otvorena')
+      document.getElementById('drawer').classList.add('otvorena')
+    }
+
+    function zatvoriDrawer() {
+      document.getElementById('drawer-overlay').classList.remove('otvorena')
+      document.getElementById('drawer').classList.remove('otvorena')
+    }
+
+    async function promijeniStatus(noviStatus) {
+      if (!aktivnaNarudžba) return
+      const { error } = await db.from('orders')
+        .update({ status: noviStatus })
+        .eq('id', aktivnaNarudžba.id)
+
+      if (error) {
+        alert('Greška pri čuvanju statusa: ' + error.message)
+        return
+      }
+
+      aktivnaNarudžba.status = noviStatus
+      const i = sveNarudžbe.findIndex(n => n.id === aktivnaNarudžba.id)
+      if (i !== -1) sveNarudžbe[i].status = noviStatus
+
+      document.getElementById('status-select').value = noviStatus
+      document.getElementById('drawer-title').innerHTML = `
+        Narudžba
+        <span class="badge badge-${noviStatus}">
+          <span class="badge-dot"></span>${preveziStatus(noviStatus)}
+        </span>`
+
+      renderActionBtns(noviStatus)
+      osvjeziCounte()
+      prikaziNarudžbe()
+    }
+
+    function otvoriModal() {
+      document.getElementById('modal-overlay').classList.add('otvorena')
+    }
+
+    function zatvoriModal() {
+      document.getElementById('modal-overlay').classList.remove('otvorena')
+    }
+
+    async function potvrdiIzbrisati() {
+      if (!aktivnaNarudžba) return
+      const { error } = await db.from('orders').delete().eq('id', aktivnaNarudžba.id)
+
+      if (error) {
+        alert('Greška pri brisanju: ' + error.message)
+        zatvoriModal()
+        return
+      }
+
+      sveNarudžbe = sveNarudžbe.filter(n => n.id !== aktivnaNarudžba.id)
+      aktivnaNarudžba = null
+      zatvoriModal()
+      zatvoriDrawer()
+      osvjeziCounte()
+      prikaziNarudžbe()
+    }
+
+    function preveziStatus(status) {
+      const mapa = {
+        novo: 'Novo', potvrdeno: 'Potvrđeno',
+        poslano: 'Poslano', dostavljeno: 'Dostavljeno', otkazano: 'Otkazano'
+      }
+      return mapa[status] || status
+    }
+
+    async function odjava() {
+      await db.auth.signOut()
+      localStorage.removeItem('aktivna_prodavnica')
+      window.location.href = '../auth.html'
+    }
+
+    init()
+  </script>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+</body>
+</html>
