@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proizvod</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;600;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body.moderna { --font:'Inter',sans-serif; --font-heading:'Inter',sans-serif; --bg:#fff; --bg2:#f9f9f9; --bg3:#f2f2f2; --text:#111; --text2:#555; --text3:#999; --accent:#111; --accent-hover:#333; --accent-text:#fff; --price:#111; --sale:#e53e3e; --border:#e8e8e8; --radius-sm:4px; --radius:8px; --radius-lg:12px; --shadow:0 2px 8px rgba(0,0,0,0.08); --shadow-lg:0 8px 32px rgba(0,0,0,0.12); }
+    body.elegantna { --font:'Playfair Display',serif; --font-heading:'Playfair Display',serif; --bg:#faf8f4; --bg2:#f5ede4; --bg3:#ede0d4; --text:#1a0f0a; --text2:#7a5c4e; --text3:#b08070; --accent:#1a0f0a; --accent-hover:#3d2010; --accent-text:#e8c99a; --price:#9c6b3c; --sale:#c0392b; --border:#ddd0c0; --radius-sm:0px; --radius:0px; --radius-lg:0px; --shadow:0 2px 12px rgba(60,30,10,0.08); --shadow-lg:0 8px 32px rgba(60,30,10,0.14); }
+    body.bold { --font:'Montserrat',sans-serif; --font-heading:'Montserrat',sans-serif; --bg:#0a0a0a; --bg2:#141414; --bg3:#1e1e1e; --text:#fff; --text2:#aaa; --text3:#666; --accent:#ff2d2d; --accent-hover:#cc0000; --accent-text:#fff; --price:#fff; --sale:#ff2d2d; --border:#2a2a2a; --radius-sm:0px; --radius:2px; --radius-lg:2px; --shadow:0 2px 8px rgba(0,0,0,0.5); --shadow-lg:0 8px 32px rgba(0,0,0,0.7); }
+    body.prirodna { --font:'Lato',sans-serif; --font-heading:'Lato',sans-serif; --bg:#f7f3ec; --bg2:#fffdf8; --bg3:#ede8df; --text:#2d1f14; --text2:#6b5040; --text3:#a08060; --accent:#5a7a4a; --accent-hover:#446038; --accent-text:#fff; --price:#5a7a4a; --sale:#c0392b; --border:#d8ccbc; --radius-sm:4px; --radius:12px; --radius-lg:16px; --shadow:0 2px 8px rgba(40,20,10,0.08); --shadow-lg:0 8px 32px rgba(40,20,10,0.14); }
+
+    body { font-family: var(--font); background: var(--bg); color: var(--text); }
+
+    .header { background: var(--bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1300px; margin: 0 auto; padding: 0 32px; height: 70px; display: flex; align-items: center; justify-content: space-between; }
+    .store-logo-wrapper { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .store-logo-img { height: 80px; object-fit: contain; }
+    .store-logo-text { font-size: 20px; font-weight: 700; color: var(--text); font-family: var(--font-heading); }
+    .header-actions { display: flex; gap: 12px; align-items: center; }
+    .nazad-link { font-size: 14px; color: var(--text2); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+    .nazad-link:hover { color: var(--text); }
+    .korpa-dugme { display: flex; align-items: center; gap: 8px; background: var(--accent); color: var(--accent-text); border: none; padding: 10px 20px; border-radius: 100px; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; }
+    .korpa-broj { background: var(--bg); color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+    /* BREADCRUMB */
+    .breadcrumb { max-width: 1300px; margin: 0 auto; padding: 16px 32px; font-size: 13px; color: var(--text3); }
+    .breadcrumb a { color: var(--text3); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--text); }
+
+    /* PRODUCT LAYOUT */
+    .sadrzaj { max-width: 1300px; margin: 0 auto; padding: 0 32px 80px; }
+    .proizvod-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+
+    /* IMAGE GALLERY */
+    .galerija { position: sticky; top: 90px; }
+    .glavna-slika-wrapper {
+      aspect-ratio: 1;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--bg2);
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+    }
+    .glavna-slika { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
+    .glavna-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 80px; }
+    .thumbnails { display: flex; gap: 10px; flex-wrap: wrap; }
+    .thumbnail {
+      width: 80px; height: 80px;
+      object-fit: cover;
+      border-radius: var(--radius);
+      border: 2px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .thumbnail:hover { border-color: var(--text2); }
+    .thumbnail.aktivan { border-color: var(--accent); }
+
+    /* PRODUCT INFO */
+    .info { padding-top: 8px; }
+    .breadcrumb-kategorija { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+    .proizvod-naziv { font-family: var(--font-heading); font-size: 32px; font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
+    .cijene-wrapper { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+    .cijena-main { font-size: 28px; font-weight: 700; color: var(--price); }
+    .cijena-stara { font-size: 20px; color: var(--text3); text-decoration: line-through; }
+    .sale-tag { background: var(--sale); color: white; padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 700; }
+    .stock-info { font-size: 14px; color: var(--accent); margin-bottom: 18px; }
+    .stock-info.stock-out { color: #dc2626; }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+    .opis { font-size: 15px; color: var(--text2); line-height: 1.8; margin-bottom: 24px; }
+
+    /* VARIANTS */
+    .varijante-blok { margin-bottom: 24px; }
+    .varijante-label { font-size: 13px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .varijante-label span { font-weight: 400; color: var(--text3); text-transform: none; letter-spacing: 0; }
+    .varijante-opcije { display: flex; flex-wrap: wrap; gap: 8px; }
+    .varijanta-btn {
+      padding: 10px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      min-width: 52px;
+      text-align: center;
+    }
+    .varijanta-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .varijanta-btn.odabran { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+    .varijanta-btn.nema-zalihe { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
+
+    /* QUANTITY */
+    .kolicina-blok { margin-bottom: 28px; }
+    .kolicina-label { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+    .kolicina-ctrl { display: inline-flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .kol-btn { width: 44px; height: 44px; background: var(--bg2); border: none; font-size: 20px; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .kol-btn:hover { background: var(--bg3); }
+    .kol-br { width: 56px; text-align: center; font-size: 16px; font-weight: 700; color: var(--text); }
+
+    /* ADD TO CART */
+    .dodaj-btn {
+      width: 100%; padding: 18px;
+      background: var(--accent); color: var(--accent-text);
+      border: none; border-radius: var(--radius);
+      font-family: var(--font); font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s, transform 0.15s;
+      margin-bottom: 12px;
+      letter-spacing: 0.2px;
+    }
+    .dodaj-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .dodaj-btn:active { transform: translateY(0); }
+    .dodaj-btn:disabled { 
+      opacity: 0.5; 
+      cursor: not-allowed; 
+      background: var(--text3);
+      transform: none;
+    }
+    .dodaj-btn:disabled:hover { 
+      background: var(--text3); 
+      transform: none;
+    }
+
+    /* TRUST BADGES */
+    .trust-badges { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+    .trust-badge { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text2); }
+    .trust-badge-icon { font-size: 18px; }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 32px; right: 32px;
+      background: var(--accent); color: var(--accent-text);
+      padding: 14px 24px; border-radius: var(--radius);
+      font-weight: 700; font-size: 14px;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s; z-index: 999;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .toast.vidljiv { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 768px) {
+      .proizvod-layout { grid-template-columns: 1fr; gap: 32px; }
+      .galerija { position: static; }
+      .sadrzaj { padding: 0 16px 60px; }
+      .header-inner { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <a href="#" class="store-logo-wrapper" id="store-logo-wrapper">
+        <img id="store-logo-img" class="store-logo-img" style="display:none;">
+        <span class="store-logo-text" id="store-logo-text"></span>
+      </a>
+      <div class="header-actions">
+        <a href="#" class="nazad-link" id="nazad-link">← Nazad</a>
+        <button class="korpa-dugme" onclick="toggleKorpaStranica()">
+           Korpa <span class="korpa-broj" id="korpa-broj">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="breadcrumb" id="breadcrumb"></div>
+
+  <div class="sadrzaj">
+    <div class="proizvod-layout" id="proizvod-layout">
+      <p style="color:var(--text3)">Učitavanje...</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><span id="toast-message">✓ Dodano u korpu!</span></div>
+
+  <script>
+    let prodavnica = null
+    let proizvod = null
+    let odabranaVarijanta = null
+    let kolicina = 1
+    let korpa = []
+    let slug = ''
+
+    function getRezervisanaKolicina() {
+      const stavka = korpa.find(s =>
+        s.proizvodId === proizvod.id && s.varijanteId === (odabranaVarijanta?.id || null)
+      )
+      return stavka ? stavka.kolicina : 0
+    }
+
+    function osvjeziStanjeGumba() {
+      const btn = document.getElementById('dodaj-btn')
+      let dostupnaZaliha = 0
+      
+      if (proizvod.product_variants && proizvod.product_variants.length > 0) {
+        dostupnaZaliha = odabranaVarijanta ? (odabranaVarijanta.stock_quantity || 0) : 0
+      } else {
+        dostupnaZaliha = proizvod.stock_quantity || 0
+      }
+
+      const rezervisana = getRezervisanaKolicina()
+      const dostupnoZaNaruciti = Math.max(0, dostupnaZaliha - rezervisana)
+      if (kolicina > dostupnoZaNaruciti) kolicina = dostupnoZaNaruciti || 1
+      document.getElementById('kol-br').innerText = kolicina
+      btn.disabled = dostupnoZaNaruciti === 0 || kolicina < 1
+      updateStockInfo()
+    }
+
+    async function init() {
+      const params = new URLSearchParams(window.location.search)
+      slug = params.get('s')
+      const id = params.get('id')
+
+      const { data: store } = await db.from('stores').select('*').eq('slug', slug).single()
+      if (!store) { window.location.href = `index.html?s=${slug}`; return }
+      prodavnica = store
+
+      document.body.classList.add(store.template || 'moderna')
+      document.title = store.name
+
+      const logoImg = document.getElementById('store-logo-img')
+      const logoText = document.getElementById('store-logo-text')
+      document.getElementById('store-logo-wrapper').href = `index.html?s=${slug}`
+      document.getElementById('nazad-link').href = `index.html?s=${slug}`
+
+      if (store.logo_url) {
+        logoImg.src = store.logo_url
+        logoImg.style.display = 'block'
+        logoText.style.display = 'none'
+      } else {
+        logoText.innerText = store.name
+      }
+
+      const savedKorpa = localStorage.getItem(`korpa_${store.id}`)
+      if (savedKorpa) korpa = JSON.parse(savedKorpa)
+      osvjeziKorpaBroj()
+
+      const { data: p } = await db
+        .from('products').select('*, product_variants(*)').eq('id', id).single()
+
+      if (!p) { window.location.href = `index.html?s=${slug}`; return }
+      proizvod = p
+      document.title = `${p.name} — ${store.name}`
+
+      document.getElementById('breadcrumb').innerHTML =
+        `<a href="index.html?s=${slug}">${store.name}</a> / ${p.name}`
+
+      prikaziProizvod()
+      osvjeziStanjeGumba()
+    }
+
+    function prikaziProizvod() {
+      const p = proizvod
+      const slike = p.images || []
+      const imaPopust = p.compare_at_price && p.compare_at_price > p.price
+
+      const grupiraneVarijante = {}
+      p.product_variants?.forEach(v => {
+        if (!grupiraneVarijante[v.variant_type]) grupiraneVarijante[v.variant_type] = []
+        grupiraneVarijante[v.variant_type].push(v)
+      })
+
+      const tipoviNazivi = {
+        size: 'Veličina', volume: 'Volumen', color: 'Boja',
+        weight: 'Težina', material: 'Materijal'
+      }
+
+      const varijanteHTML = Object.entries(grupiraneVarijante).map(([tip, varijante]) => `
+        <div class="varijante-blok">
+          <p class="varijante-label">${tipoviNazivi[tip] || tip} <span id="odabrana-${tip}"></span></p>
+          <div class="varijante-opcije">
+            ${varijante.map(v => `
+              <button class="varijanta-btn ${v.stock_quantity === 0 ? 'nema-zalihe' : ''}"
+                onclick="${v.stock_quantity > 0 ? `odaberiVarijantu('${v.id}', '${tip}', '${v.name}', this)` : ''}"
+                ${v.stock_quantity === 0 ? 'disabled' : ''}>
+                ${v.name}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')
+
+      const stockInfoHTML = p.product_variants && p.product_variants.length > 0
+        ? `<p class="stock-info">Odaberite varijantu da vidite stanje.</p>`
+        : `<p class="stock-info ${p.stock_quantity === 0 ? 'stock-out' : ''}">${p.stock_quantity === 0 ? 'Nema na stanju.' : `Na stanju: ${p.stock_quantity} kom.`}</p>`
+
+      document.getElementById('proizvod-layout').innerHTML = `
+        <div class="galerija">
+          <div class="glavna-slika-wrapper">
+            ${slike.length > 0
+              ? `<img class="glavna-slika" id="glavna-slika" src="${slike[0]}" alt="${p.name}">`
+              : `<div class="glavna-placeholder">📦</div>`
+            }
+          </div>
+          ${slike.length > 1 ? `
+            <div class="thumbnails">
+              ${slike.map((s, i) => `
+                <img class="thumbnail ${i === 0 ? 'aktivan' : ''}"
+                  src="${s}" onclick="promijeniSliku(${i}, this)" alt="Slika ${i+1}">
+              `).join('')}
+            </div>` : ''
+          }
+        </div>
+
+        <div class="info">
+          <p class="breadcrumb-kategorija">${prodavnica.niche || ''}</p>
+          <h1 class="proizvod-naziv">${p.name}</h1>
+
+          <div class="cijene-wrapper">
+            <span class="cijena-main" id="cijena-main">${parseFloat(p.price).toFixed(2)} KM</span>
+            ${imaPopust ? `
+              <span class="cijena-stara">${parseFloat(p.compare_at_price).toFixed(2)} KM</span>
+              <span class="sale-tag">UŠTEDI ${Math.round((1 - p.price/p.compare_at_price)*100)}%</span>
+            ` : ''}
+          </div>
+
+          ${stockInfoHTML}
+          ${p.description ? `<p class="opis">${p.description}</p>` : ''}
+
+          <hr class="divider">
+
+          ${varijanteHTML}
+
+          <div class="kolicina-blok">
+            <p class="kolicina-label">Količina</p>
+            <div class="kolicina-ctrl">
+              <button class="kol-btn" onclick="promijeniKolicinu(-1)">−</button>
+              <span class="kol-br" id="kol-br">1</span>
+              <button class="kol-btn" onclick="promijeniKolicinu(1)">+</button>
+            </div>
+          </div>
+
+          <button class="dodaj-btn" id="dodaj-btn" onclick="dodajUKorpu()">
+            Dodaj u korpu
+          </button>
+
+          <div class="trust-badges">
+            <div class="trust-badge"><span class="trust-badge-icon"></span> Dostava po cijeloj BiH</div>
+            <div class="trust-badge"><span class="trust-badge-icon"></span> Plaćanje pouzećem</div>
+            <div class="trust-badge"><span class="trust-badge-icon"></span> Sigurna kupovina</div>
+          </div>
+        </div>
+      `
+    }
+
+    function promijeniSliku(index, el) {
+      document.getElementById('glavna-slika').src = proizvod.images[index]
+      document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('aktivan'))
+      el.classList.add('aktivan')
+    }
+
+    function odaberiVarijantu(id, tip, naziv, dugme) {
+      odabranaVarijanta = proizvod.product_variants.find(v => v.id === id)
+      document.querySelectorAll(`.varijante-blok .varijanta-btn`).forEach(d => {
+        if (d.closest('.varijante-blok').querySelector('.varijante-label').innerText.includes(tip === 'size' ? 'Veličina' : tip)) {
+          d.classList.remove('odabran')
+        }
+      })
+      dugme.classList.add('odabran')
+      const el = document.getElementById(`odabrana-${tip}`)
+      if (el) el.innerText = naziv
+      const cijena = parseFloat(proizvod.price) + (odabranaVarijanta?.price_modifier || 0)
+      document.getElementById('cijena-main').innerText = cijena.toFixed(2) + ' KM'
+      osvjeziStanjeGumba()
+      updateStockInfo()
+    }
+
+    function promijeniKolicinu(promjena) {
+      const ukupnaZaliha = odabranaVarijanta
+        ? odabranaVarijanta.stock_quantity || 0
+        : proizvod.stock_quantity || 0
+      const rezervisana = getRezervisanaKolicina()
+      const max = Math.max(0, ukupnaZaliha - rezervisana)
+      kolicina = Math.max(1, Math.min(max, kolicina + promjena))
+      document.getElementById('kol-br').innerText = kolicina
+      osvjeziStanjeGumba()
+      updateStockInfo()
+    }
+
+    function updateStockInfo() {
+      const info = document.getElementById('stock-info')
+      if (!info) return
+
+      if (proizvod.product_variants && proizvod.product_variants.length > 0) {
+        if (!odabranaVarijanta) {
+          info.innerText = 'Odaberite varijantu da vidite stanje.'
+          info.classList.remove('stock-out')
+          return
+        }
+      }
+
+      const ukupnaZaliha = odabranaVarijanta
+        ? odabranaVarijanta.stock_quantity || 0
+        : proizvod.stock_quantity || 0
+      const rezervisana = getRezervisanaKolicina()
+      const dostupno = Math.max(0, ukupnaZaliha - rezervisana)
+
+      if (dostupno === 0) {
+        info.innerText = 'Nema na stanju.'
+        info.classList.add('stock-out')
+      } else {
+        info.innerText = `Na stanju: ${dostupno} kom.`
+        info.classList.remove('stock-out')
+      }
+    }
+
+    function dodajUKorpu() {
+      // Check if product has variants and require selection
+      if (proizvod.product_variants && proizvod.product_variants.length > 0 && !odabranaVarijanta) {
+        showToast('Molimo odaberite varijantu proizvoda prije dodavanja u korpu.', 'error')
+        return
+      }
+
+      const ukupnaZaliha = odabranaVarijanta
+        ? odabranaVarijanta.stock_quantity || 0
+        : proizvod.stock_quantity || 0
+      const rezervisana = getRezervisanaKolicina()
+      const dostupnoZaNaruciti = Math.max(0, ukupnaZaliha - rezervisana)
+
+      if (kolicina > dostupnoZaNaruciti) {
+        showToast(dostupnoZaNaruciti === 0
+          ? 'Ovaj proizvod trenutno nije na stanju.'
+          : `Na stanju ima samo ${dostupnoZaNaruciti} komada.`, 'error')
+        return
+      }
+
+      const cijena = parseFloat(proizvod.price) + (odabranaVarijanta?.price_modifier || 0)
+      const postojeci = korpa.find(s =>
+        s.proizvodId === proizvod.id && s.varijanteId === (odabranaVarijanta?.id || null)
+      )
+      if (postojeci) {
+        postojeci.kolicina += kolicina
+      } else {
+        korpa.push({
+          proizvodId: proizvod.id,
+          varijanteId: odabranaVarijanta?.id || null,
+          varijanteNaziv: odabranaVarijanta?.name || null,
+          naziv: proizvod.name,
+          cijena: parseFloat(cijena),
+          slika: proizvod.images?.[0] || null,
+          kolicina
+        })
+      }
+      localStorage.setItem(`korpa_${prodavnica.id}`, JSON.stringify(korpa))
+      osvjeziKorpaBroj()
+      showToast()
+    }
+
+    function osvjeziKorpaBroj() {
+      const br = korpa.reduce((s, i) => s + i.kolicina, 0)
+      document.getElementById('korpa-broj').innerText = br
+    }
+
+    function showToast(message = '✓ Dodano u korpu!', type = 'success') {
+      const toast = document.getElementById('toast')
+      const toastMessage = document.getElementById('toast-message')
+      
+      if (type === 'error') {
+        toastMessage.textContent = message
+        toast.style.backgroundColor = '#dc2626'
+        toast.style.color = '#fff'
+      } else {
+        toastMessage.textContent = message
+        toast.style.backgroundColor = ''
+        toast.style.color = ''
+      }
+      
+      toast.classList.add('vidljiv')
+      setTimeout(() => toast.classList.remove('vidljiv'), 2500)
+    }
+
+    function toggleKorpaStranica() {
+      window.location.href = `index.html?s=${slug}`
+    }
+
+    init()
+  </script>
+</body>
+</html>

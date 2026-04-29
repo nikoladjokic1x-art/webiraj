@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Narudžba</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;600;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body.moderna { --font:'Inter',sans-serif; --font-heading:'Inter',sans-serif; --bg:#fff; --bg2:#f9f9f9; --bg3:#f2f2f2; --text:#111; --text2:#555; --text3:#999; --accent:#111; --accent-hover:#333; --accent-text:#fff; --price:#111; --border:#e8e8e8; --radius-sm:4px; --radius:8px; --radius-lg:12px; }
+    body.elegantna { --font:'Playfair Display',serif; --font-heading:'Playfair Display',serif; --bg:#faf8f4; --bg2:#f5ede4; --bg3:#ede0d4; --text:#1a0f0a; --text2:#7a5c4e; --text3:#b08070; --accent:#1a0f0a; --accent-hover:#3d2010; --accent-text:#e8c99a; --price:#9c6b3c; --border:#ddd0c0; --radius-sm:0px; --radius:0px; --radius-lg:0px; }
+    body.bold { --font:'Montserrat',sans-serif; --font-heading:'Montserrat',sans-serif; --bg:#0a0a0a; --bg2:#141414; --bg3:#1e1e1e; --text:#fff; --text2:#aaa; --text3:#666; --accent:#ff2d2d; --accent-hover:#cc0000; --accent-text:#fff; --price:#fff; --border:#2a2a2a; --radius-sm:0px; --radius:2px; --radius-lg:2px; }
+    body.prirodna { --font:'Lato',sans-serif; --font-heading:'Lato',sans-serif; --bg:#f7f3ec; --bg2:#fffdf8; --bg3:#ede8df; --text:#2d1f14; --text2:#6b5040; --text3:#a08060; --accent:#5a7a4a; --accent-hover:#446038; --accent-text:#fff; --price:#5a7a4a; --border:#d8ccbc; --radius-sm:4px; --radius:12px; --radius-lg:16px; }
+
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .header { background: var(--bg); border-bottom: 1px solid var(--border); }
+    .header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; height: 70px; display: flex; align-items: center; justify-content: space-between; }
+    .store-logo-wrapper { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .store-logo-img { height: 80px; object-fit: contain; }
+    .store-logo-text { font-size: 20px; font-weight: 700; color: var(--text); font-family: var(--font-heading); }
+    .nazad-link { font-size: 14px; color: var(--text2); text-decoration: none; }
+    .nazad-link:hover { color: var(--text); }
+
+    .checkout-layout { max-width: 1100px; margin: 0 auto; padding: 48px 32px; display: grid; grid-template-columns: 1fr 420px; gap: 64px; align-items: start; }
+    @media (max-width: 800px) { .checkout-layout { grid-template-columns: 1fr; padding: 24px 16px; } .order-summary { order: -1; } }
+
+    /* FORM */
+    .forma h2 { font-family: var(--font-heading); font-size: 24px; font-weight: 700; margin-bottom: 32px; }
+    .forma-sekcija { margin-bottom: 32px; }
+    .forma-sekcija-naslov { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .forma-red { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .forma-grupa { margin-bottom: 16px; }
+    .oznaka { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+    .polje {
+      width: 100%; padding: 13px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: var(--font); font-size: 15px;
+      background: var(--bg2); color: var(--text);
+      outline: none; transition: border-color 0.2s;
+    }
+    .polje:focus { border-color: var(--accent); background: var(--bg); }
+    textarea.polje { resize: vertical; min-height: 90px; }
+
+    .kod-row { display: flex; gap: 10px; }
+    .primijeni-btn { padding: 13px 20px; background: var(--bg3); color: var(--text); border: 1.5px solid var(--border); border-radius: var(--radius); font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+    .primijeni-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .popust-msg { font-size: 13px; margin-top: 8px; }
+    .popust-msg.ok { color: #38a169; }
+    .popust-msg.err { color: #e53e3e; }
+
+    .naruci-btn {
+      width: 100%; padding: 18px;
+      background: var(--accent); color: var(--accent-text);
+      border: none; border-radius: var(--radius);
+      font-family: var(--font); font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+      margin-bottom: 16px;
+    }
+    .naruci-btn:hover { background: var(--accent-hover); }
+    .naruci-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .cod-info {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px;
+      font-size: 13px; color: var(--text2); line-height: 1.6;
+    }
+    .cod-icon { font-size: 22px; flex-shrink: 0; }
+    .greska-msg { color: #e53e3e; font-size: 14px; margin-bottom: 12px; }
+
+    /* ORDER SUMMARY */
+    .order-summary { position: sticky; top: 24px; }
+    .summary-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .summary-header { padding: 20px 24px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 15px; }
+    .summary-stavke { padding: 16px 24px; }
+    .summary-stavka { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .summary-stavka:last-child { border-bottom: none; }
+    .summary-slika-wrapper { position: relative; flex-shrink: 0; }
+    .summary-slika { width: 52px; height: 52px; object-fit: cover; border-radius: var(--radius-sm); background: var(--bg3); }
+    .summary-kolicina-badge { position: absolute; top: -6px; right: -6px; background: var(--text2); color: var(--bg); border-radius: 50%; width: 20px; height: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .summary-stavka-info { flex: 1; }
+    .summary-stavka-naziv { font-size: 14px; font-weight: 600; color: var(--text); }
+    .summary-stavka-varijanta { font-size: 12px; color: var(--text3); }
+    .summary-stavka-cijena { font-size: 14px; font-weight: 700; color: var(--price); }
+    .summary-totals { padding: 16px 24px; border-top: 1px solid var(--border); }
+    .summary-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text2); margin-bottom: 8px; }
+    .summary-row.popust { color: #38a169; }
+    .summary-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: var(--text); margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--border); }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <a href="#" class="store-logo-wrapper" id="store-logo-wrapper">
+        <img id="store-logo-img" class="store-logo-img" style="display:none;">
+        <span class="store-logo-text" id="store-logo-text"></span>
+      </a>
+      <a href="#" class="nazad-link" id="nazad-link">← Nazad u prodavnicu</a>
+    </div>
+  </header>
+
+  <div class="checkout-layout">
+    <div class="forma">
+      <h2>Vaši podaci</h2>
+
+      <div class="forma-sekcija">
+        <p class="forma-sekcija-naslov">Kontakt informacije</p>
+        <div class="forma-red">
+          <div class="forma-grupa">
+            <label class="oznaka">Ime i prezime *</label>
+            <input class="polje" type="text" id="ime" placeholder="Amra Hodžić">
+          </div>
+          <div class="forma-grupa">
+            <label class="oznaka">Telefon *</label>
+            <input class="polje" type="tel" id="telefon" placeholder="+387 61 123 456">
+          </div>
+        </div>
+        <div class="forma-grupa">
+          <label class="oznaka">Email (opciono)</label>
+          <input class="polje" type="email" id="email" placeholder="amra@email.com">
+        </div>
+      </div>
+
+      <div class="forma-sekcija">
+        <p class="forma-sekcija-naslov">Adresa dostave</p>
+        <div class="forma-grupa">
+          <label class="oznaka">Ulica i broj *</label>
+          <input class="polje" type="text" id="adresa" placeholder="Titova 1">
+        </div>
+        <div class="forma-red">
+          <div class="forma-grupa">
+            <label class="oznaka">Grad *</label>
+            <input class="polje" type="text" id="grad" placeholder="Sarajevo">
+          </div>
+          <div class="forma-grupa">
+            <label class="oznaka">Poštanski broj</label>
+            <input class="polje" type="text" id="postanski" placeholder="71000">
+          </div>
+        </div>
+      </div>
+
+      <div class="forma-sekcija">
+        <p class="forma-sekcija-naslov">Napomena i popust</p>
+        <div class="forma-grupa">
+          <label class="oznaka">Napomena (opciono)</label>
+          <textarea class="polje" id="napomena" placeholder="Posebne instrukcije..."></textarea>
+        </div>
+        <div class="forma-grupa">
+          <label class="oznaka">Kod za popust</label>
+          <div class="kod-row">
+            <input class="polje" type="text" id="kod" placeholder="POPUST10" style="text-transform:uppercase;">
+            <button class="primijeni-btn" onclick="primijeniKod()">Primijeni</button>
+          </div>
+          <p class="popust-msg" id="popust-msg"></p>
+        </div>
+      </div>
+
+      <p class="greska-msg" id="greska-msg"></p>
+      <button class="naruci-btn" id="naruci-btn" onclick="naruci()">Potvrdi narudžbu →</button>
+
+      <div class="cod-info">
+        <span class="cod-icon">💵</span>
+        <div>
+          <strong>Plaćanje pouzećem (COD)</strong><br>
+          Platite kuriru pri preuzimanju paketa. Ne trebate ništa platiti unaprijed.
+        </div>
+      </div>
+    </div>
+
+    <div class="order-summary">
+      <div class="summary-card">
+        <div class="summary-header">Pregled narudžbe</div>
+        <div class="summary-stavke" id="summary-stavke"></div>
+        <div class="summary-totals">
+          <div class="summary-row"><span>Zbir</span><span id="summary-subtotal"></span></div>
+          <div class="summary-row"><span>Dostava</span><span>11 KM</span></div>
+          <div class="summary-row popust" id="summary-popust-row" style="display:none;">
+            <span>Popust</span><span id="summary-popust-iznos"></span>
+          </div>
+          <div class="summary-total"><span>Ukupno</span><span id="summary-total"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let prodavnica = null
+    let korpa = []
+    let popust = null
+    let popustIznos = 0
+    let slug = ''
+
+    async function init() {
+      const params = new URLSearchParams(window.location.search)
+      slug = params.get('s')
+
+      const { data: store } = await db.from('stores').select('*').eq('slug', slug).single()
+      if (!store) return
+      prodavnica = store
+
+      document.body.classList.add(store.template || 'moderna')
+      document.title = `Narudžba — ${store.name}`
+
+      const logoImg = document.getElementById('store-logo-img')
+      const logoText = document.getElementById('store-logo-text')
+      document.getElementById('store-logo-wrapper').href = `index.html?s=${slug}`
+      document.getElementById('nazad-link').href = `index.html?s=${slug}`
+
+      if (store.logo_url) {
+        logoImg.src = store.logo_url
+        logoImg.style.display = 'block'
+        logoText.style.display = 'none'
+      } else {
+        logoText.innerText = store.name
+      }
+
+      const savedKorpa = localStorage.getItem(`korpa_${store.id}`)
+      korpa = savedKorpa ? JSON.parse(savedKorpa) : []
+      if (korpa.length === 0) { window.location.href = `index.html?s=${slug}`; return }
+
+      prikaziSummary()
+    }
+
+    function prikaziSummary() {
+      const subtotal = korpa.reduce((s, i) => s + i.cijena * i.kolicina, 0)
+      const dostava = 11
+      const ukupno = Math.max(0, subtotal + dostava - popustIznos)
+
+      document.getElementById('summary-stavke').innerHTML = korpa.map(s => `
+        <div class="summary-stavka">
+          <div class="summary-slika-wrapper">
+            ${s.slika
+              ? `<img class="summary-slika" src="${s.slika}">`
+              : `<div class="summary-slika" style="display:flex;align-items:center;justify-content:center;font-size:20px;">📦</div>`
+            }
+            <span class="summary-kolicina-badge">${s.kolicina}</span>
+          </div>
+          <div class="summary-stavka-info">
+            <p class="summary-stavka-naziv">${s.naziv}</p>
+            ${s.varijanteNaziv ? `<p class="summary-stavka-varijanta">${s.varijanteNaziv}</p>` : ''}
+          </div>
+          <span class="summary-stavka-cijena">${(s.cijena * s.kolicina).toFixed(2)} KM</span>
+        </div>
+      `).join('')
+
+      document.getElementById('summary-subtotal').innerText = subtotal.toFixed(2) + ' KM'
+      document.getElementById('summary-total').innerText = ukupno.toFixed(2) + ' KM'
+
+      if (popustIznos > 0) {
+        document.getElementById('summary-popust-row').style.display = 'flex'
+        document.getElementById('summary-popust-iznos').innerText = `-${popustIznos.toFixed(2)} KM`
+      }
+    }
+
+    async function primijeniKod() {
+      const kod = document.getElementById('kod').value.trim().toUpperCase()
+      const msg = document.getElementById('popust-msg')
+      if (!kod) return
+
+      const { data: dc } = await db
+        .from('discount_codes').select('*')
+        .eq('store_id', prodavnica.id).eq('code', kod).eq('is_active', true).single()
+
+      if (!dc) { msg.className = 'popust-msg err'; msg.innerText = 'Kod nije validan.'; return }
+      if (dc.expires_at && new Date(dc.expires_at) < new Date()) { msg.className = 'popust-msg err'; msg.innerText = 'Kod je istekao.'; return }
+      if (dc.max_uses && dc.used_count >= dc.max_uses) { msg.className = 'popust-msg err'; msg.innerText = 'Kod je iskorišten.'; return }
+
+      const subtotal = korpa.reduce((s, i) => s + i.cijena * i.kolicina, 0)
+      if (dc.min_order_amount && subtotal < dc.min_order_amount) {
+        msg.className = 'popust-msg err'
+        msg.innerText = `Minimum za ovaj kod je ${dc.min_order_amount} KM.`
+        return
+      }
+
+      popust = dc
+      popustIznos = dc.discount_type === 'percentage'
+        ? subtotal * (dc.discount_value / 100)
+        : dc.discount_value
+
+      msg.className = 'popust-msg ok'
+      msg.innerText = `Popust primijenjen! -${popustIznos.toFixed(2)} KM`
+      prikaziSummary()
+    }
+
+    async function naruci() {
+      const ime = document.getElementById('ime').value.trim()
+      const telefon = document.getElementById('telefon').value.trim()
+      const email = document.getElementById('email').value.trim()
+      const adresa = document.getElementById('adresa').value.trim()
+      const grad = document.getElementById('grad').value.trim()
+      const napomena = document.getElementById('napomena').value.trim()
+      const greska = document.getElementById('greska-msg')
+      const btn = document.getElementById('naruci-btn')
+
+      if (!ime || !telefon || !adresa || !grad) {
+        greska.innerText = 'Molimo popunite sva obavezna polja (*).'
+        return
+      }
+
+      btn.disabled = true
+      btn.innerText = 'Slanje narudžbe...'
+      greska.innerText = ''
+
+      const subtotal = korpa.reduce((s, i) => s + i.cijena * i.kolicina, 0)
+      const dostava = 11
+      const ukupno = Math.max(0, subtotal + dostava - popustIznos)
+
+      const { data: narudžba, error } = await db.from('orders').insert({
+        store_id: prodavnica.id,
+        customer_name: ime,
+        customer_phone: telefon,
+        customer_email: email || null,
+        customer_address: adresa,
+        customer_city: grad,
+        note: napomena || null,
+        status: 'novo',
+        total_amount: ukupno,
+        discount_code_id: popust?.id || null,
+        discount_amount: popustIznos
+      }).select().single()
+
+      if (error) {
+        greska.innerText = 'Greška. Pokušajte ponovo.'
+        btn.disabled = false
+        btn.innerText = 'Potvrdi narudžbu →'
+        return
+      }
+
+      await db.from('order_items').insert(
+        korpa.map(s => ({
+          order_id: narudžba.id,
+          product_id: s.proizvodId,
+          variant_id: s.varijanteId || null,
+          product_name: s.naziv,
+          variant_name: s.varijanteNaziv || null,
+          quantity: s.kolicina,
+          unit_price: s.cijena
+        }))
+      )
+
+      for (const s of korpa) {
+        if (s.varijanteId) {
+          await db.rpc('smanji_zalihu', { varijanta_id: s.varijanteId, kolicina: s.kolicina })
+        } else {
+          // Deduct stock for products without variants
+          const { data: product } = await db.from('products').select('stock_quantity').eq('id', s.proizvodId).single()
+          if (product) {
+            const novaZaliha = Math.max(0, (product.stock_quantity || 0) - s.kolicina)
+            await db.from('products').update({ stock_quantity: novaZaliha }).eq('id', s.proizvodId)
+          }
+        }
+      }
+
+      if (popust) {
+        await db.from('discount_codes')
+          .update({ used_count: popust.used_count + 1 }).eq('id', popust.id)
+      }
+
+      localStorage.removeItem(`korpa_${prodavnica.id}`)
+      window.location.href = `confirmed.html?s=${slug}&id=${narudžba.id}`
+    }
+
+    init()
+  </script>
+</body>
+</html>
